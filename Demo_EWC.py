@@ -2,7 +2,7 @@ import sys
 import os
 import traceback
 from Test_Utils import *
-from Finetune_SNI_ICLR import *
+from Finetune_SLNI import *
 from Permute_Mnist import *
 num_tasks = 5
 
@@ -56,7 +56,7 @@ for hsize in hsizes:
 
         # SPARSE REG
 
-        from Finetune_EWC_SNI import *
+        from Finetune_EWC_SLNID import *
 
 
         init_label = dlabel

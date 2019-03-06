@@ -2,7 +2,7 @@
 # Note that results on MAS were better than EWC on other datasets (Cifar10 and Tinyimagenet)
 # However, our regularizer works with both.
 from Test_Utils import *
-from Finetune_SNI_ICLR import *
+from Finetune_SLNI import *
 from Permute_Mnist import *
 import traceback
 num_tasks = 5
@@ -64,7 +64,7 @@ for hsize in hsizes:
 
         # USE MAS Regularizer to prevent forgetting along with out sparsity regularizer
 
-        from MAS_SNI_ICLR import *
+        from MAS_SLNID import *
 
 
         init_label = dlabel
