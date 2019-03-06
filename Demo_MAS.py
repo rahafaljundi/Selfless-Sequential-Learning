@@ -1,3 +1,6 @@
+# Demo for SLNI with MAS regularizer on Permuted Mnist.
+# Note that results on MAS were better than EWC on other datasets (Cifar10 and Tinyimagenet)
+# However, our regularizer works with both.
 from Test_Utils import *
 from Finetune_SNI_ICLR import *
 from Permute_Mnist import *

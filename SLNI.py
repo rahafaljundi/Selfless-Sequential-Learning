@@ -51,14 +51,14 @@ class SLNI_Module(nn.Module):
                             neuron_omega_val=modulex.omega_val
                             
                             if self.scale==0:
-                                decov_loss +=deCov_loss_neuron_mega(x,neuron_omega_val,self.min,self.squash) 
+                                decov_loss +=SNID_loss(x, neuron_omega_val, self.min, self.squash)#no local window
                             else:
-                                decov_loss += deCov_loss_neuron_mega_gaussian_weighted(x,neuron_omega_val,x.size(1)/self.scale,self.min,self.squash)
+                                decov_loss += SLNID_loss(x, neuron_omega_val, x.size(1) / self.scale, self.min, self.squash)#our complete loss
                         else:
-                            if self.scale==0:
-                                decov_loss +=deCov_loss(x)
+                            if self.scale==0:#no neuron importance, no local window
+                                decov_loss +=SNI_loss(x)
                             else:
-                                decov_loss += deCov_loss_gaussian_weighted(x,x.size(1)/self.scale)
+                                decov_loss += SLNI_loss(x, x.size(1) / self.scale)#no neuron importance
                 #for reshaping the fully connected layers
                 #need to be changed for 
                 if sub_index==0:
@@ -72,7 +72,7 @@ class SLNI_Module(nn.Module):
         return x,decov_loss
     
 
-def deCov_loss(A):
+def SNI_loss(A):
   
     #e=torch.ones((A.size(0)),1).cuda()
     #e= Variable(e, requires_grad=False)
@@ -90,11 +90,11 @@ def deCov_loss(A):
     decov_loss=decov_loss#/A.size(1)
     #NORM 1 is HERE!
     if decov_loss.data.item()<0:
-        print('DECOV LOSS L1 IS ZEROO')
+
         return 0
     return decov_loss
 
-def deCov_loss_gaussian_weighted(A,scale=32):
+def SLNI_loss(A, scale=32):
   
     #e=torch.ones((A.size(0)),1).cuda()
     #e= Variable(e, requires_grad=False)
@@ -116,11 +116,11 @@ def deCov_loss_gaussian_weighted(A,scale=32):
     decov_loss=decov_loss#/A.size(1)
     #NORM 1 is HERE!
     if decov_loss.data.item()<0:
-        print('DECOV LOSS L1 IS ZEROO')
+
         return 0
     return decov_loss
 
-def deCov_loss_neuron_mega(A,neuron_omega_val,take_min=False,squash='exp'):
+def SNID_loss(A, neuron_omega_val, take_min=False, squash='exp'):
   
     #e=torch.ones((A.size(0)),1).cuda()
     #e= Variable(e, requires_grad=False)
@@ -156,11 +156,11 @@ def deCov_loss_neuron_mega(A,neuron_omega_val,take_min=False,squash='exp'):
     #divide by the number of neurons
     decov_loss=decov_loss#/A.size(1)
     if decov_loss.data.item()<0:
-        print('DECOV LOSS L1 IS ZEROO')
+
         return 0
     return decov_loss
 
-def deCov_loss_neuron_mega_gaussian_weighted(A,neuron_omega_val,scale,take_min=False,squash='exp'):
+def SLNID_loss(A, neuron_omega_val, scale, take_min=False, squash='exp'):
   
     sigmoid=torch.nn.Sigmoid()
     if squash=='exp':
@@ -194,6 +194,6 @@ def deCov_loss_neuron_mega_gaussian_weighted(A,neuron_omega_val,scale,take_min=F
     #divide by the number of neurons
     decov_loss=decov_loss#/A.size(1)
     if decov_loss.data.item()<0:
-        print('DECOV LOSS L1 IS ZEROO')
+
         return 0
     return decov_loss

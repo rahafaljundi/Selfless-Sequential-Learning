@@ -1,3 +1,4 @@
+#Implements the main functions for using MAS regularizer
 from __future__ import print_function, division
 
 import torch
@@ -330,7 +331,7 @@ def accumulate_objective_based_weights(data_dir,reg_sets,model_ft,batch_size,nor
     reg_params=Regularized_Training.initialize_store_reg_params(model_ft)
     model_ft.reg_params=reg_params
     
-    optimizer_ft = Regularized_Training.Objective_After_SGD(model_ft.parameters(), lr=0.0001, momentum=0.9)
+    optimizer_ft = Regularized_Training.MAS_OMEGA_ESTIMATE(model_ft.parameters(), lr=0.0001, momentum=0.9)
    
     if norm=='L2':
         print('********************objective with L2 norm***************')
@@ -378,7 +379,7 @@ def accumulate_objective_based_weights_sparce(data_dir,reg_sets,model_ft,batch_s
     reg_params=Regularized_Training.initialize_store_reg_params(model_ft)
     model_ft.reg_params=reg_params
     
-    optimizer_ft = Regularized_Training.Objective_After_SGD(model_ft.parameters(), lr=0.0001, momentum=0.9)
+    optimizer_ft = Regularized_Training.MAS_OMEGA_ESTIMATE(model_ft.parameters(), lr=0.0001, momentum=0.9)
    
     if norm=='L2':
         print('********************objective with L2 norm***************')
@@ -411,7 +412,7 @@ def accumulate_objective_based_weights_sparce_tasks_prob(dataset_pathes,task_ind
     reg_params=Regularized_Training.initialize_store_reg_params(model_ft)
     model_ft.reg_params=reg_params
     
-    optimizer_ft = Regularized_Training.Objective_After_SGD(model_ft.parameters(), lr=0.0001, momentum=0.9)
+    optimizer_ft = Regularized_Training.MAS_OMEGA_ESTIMATE(model_ft.parameters(), lr=0.0001, momentum=0.9)
    
     if b1:
         model_ft = Regularized_Training.compute_importance_l2_sparce_tasks_prb_onebatch(model_ft, optimizer_ft,exp_lr_scheduler, dataset_pathes,task_index,probs,batch_size,use_gpu)

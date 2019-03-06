@@ -115,7 +115,7 @@ def get_MAS_neruon_omega(data_dir,reg_sets,model_ft,batch_size,norm='L2',augment
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
         
     
-    #========================COPIED FROM FACTS*
+
    
     dset_loaders=[]
     for data_path in reg_sets:
@@ -143,7 +143,7 @@ def get_MAS_neruon_omega(data_dir,reg_sets,model_ft,batch_size,norm='L2',augment
     reg_params=Regularized_Training.initialize_store_reg_params(model_ft)
     model_ft.reg_params=reg_params
     
-    optimizer_ft = Regularized_Training.Objective_After_SGD(model_ft.parameters(), lr=0.0001, momentum=0.9)
+    optimizer_ft = Regularized_Training.MAS_OMEGA_ESTIMATE(model_ft.parameters(), lr=0.0001, momentum=0.9)
    
     if norm=='L2':
         print('********************objective with L2 norm***************')
