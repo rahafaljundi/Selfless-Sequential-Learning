@@ -5,16 +5,14 @@ from Test_Utils import *
 from Finetune_SNI_ICLR import *
 from Permute_Mnist import *
 num_tasks = 5
-reg_lambdas = [0]
-sparse_lams = [1e-3]
+
 hsizes = [ 64]
 in_layers = [['1', '3'], []]
 #
-reg_lambdas = [1e5, 1e6, 5e6, 1e7, 1e8]
-reg_lambdas = [10, 20, 30, 40]
-sparse_lams = [1e-2, 5e-3, 1e-3, 5e-3, 2e-4, 5e-4, 8e-4, 1e-4]
-sparse_lams=[1e-2]
-reg_lambdas = [200]
+
+sparse_lams = [2e-3]
+
+reg_lambdas = [50]
 scale = 6
 data_parent_path= 'Datasets'
 parent_exp_dir="/esat/dragon/raljundi/SLNI_TEST/"#CHANGE TO YOUR DIRECTORY
@@ -63,7 +61,7 @@ for hsize in hsizes:
 
         init_label = dlabel
         for reg_lambda in reg_lambdas:
-           
+
             reg_sets = []
             dataset_path = data_parent_path+ '/permuted_t'+ init_label + '_dataset.pth.tar'
 
