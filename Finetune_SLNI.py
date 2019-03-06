@@ -2,7 +2,7 @@
 
 import sys
 from SGD_Training import *
-from SLNID import *
+from SLNI import *
 
 def exp_lr_scheduler(optimizer, epoch, init_lr=0.0004, lr_decay_epoch=45):
     """Decay learning rate by a factor of 0.1 every lr_decay_epoch epochs."""

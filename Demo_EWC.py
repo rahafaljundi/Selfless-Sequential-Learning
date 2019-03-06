@@ -12,10 +12,10 @@ in_layers = [['1', '3'], []]
 
 sparse_lams = [2e-3]
 
-reg_lambdas = [50]
+reg_lambdas = [10]
 scale = 6
 data_parent_path= 'Datasets'
-parent_exp_dir="/esat/dragon/raljundi/SLNI_TEST/"#CHANGE TO YOUR DIRECTORY
+parent_exp_dir="/esat/dragon/raljundi/SLNI_TESTX/"#CHANGE TO YOUR DIRECTORY
 # scale= int(sys.argv[1])
 print("scale is :", str(scale))
 for hsize in hsizes:
