@@ -56,7 +56,7 @@ for hsize in hsizes:
 
         # SPARSE REG
 
-        from Finetune_EWC_SLNID import *
+        from EWC_SLNID import *
 
 
         init_label = dlabel
