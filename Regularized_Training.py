@@ -432,7 +432,7 @@ def compute_importance_l2_sparce(model, optimizer, lr_scheduler,dset_loaders,use
             targets.backward()
         #print('step')
             optimizer.step(model.reg_params,index,labels.size(0))
-            print('batch number ',index)
+
             index+=1
    
     return model

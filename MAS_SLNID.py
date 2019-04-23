@@ -81,7 +81,7 @@ def fine_tune_objective_based_orthreg_acuumelation(dataset_path,previous_task_mo
     model_ft = Regularized_Training.train_model(model_ft, criterion, optimizer_ft,exp_lr_scheduler, lr,dset_loaders,dset_sizes,use_gpu,num_epochs,exp_dir,resume)
     
     return model_ft
-def fine_tune_objective_based_acuumelation_sparce(dataset_path,previous_task_model_path,init_model_path,exp_dir,data_dir,reg_sets,reg_lambda=1,norm='', num_epochs=100,lr=0.0008,batch_size=200,after_freeze=1,lam=0,b1=True,L1_decay=False,weight_decay=1e-5,lr_multiplier=None,head_shared=False,neuron_omega=False,metric='avg',augment_omega=False,lr_decay_epoch=45):
+def fine_MAS_acuumelation_sparce(dataset_path,previous_task_model_path,init_model_path,exp_dir,data_dir,reg_sets,reg_lambda=1,norm='', num_epochs=100,lr=0.0008,batch_size=200,after_freeze=1,lam=0,b1=True,L1_decay=False,weight_decay=1e-5,lr_multiplier=None,head_shared=False,neuron_omega=False,metric='avg',augment_omega=False,lr_decay_epoch=45):
     dsets = torch.load(dataset_path)
     dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=batch_size,
                                                shuffle=True, num_workers=4)

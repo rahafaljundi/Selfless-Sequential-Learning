@@ -4,22 +4,33 @@
 from Test_Utils import *
 from Finetune_SLNI import *
 from Permute_Mnist import *
+from MAS_SLNID import *
 import traceback
+import argparse
+
+# arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('--reg_lambda', type=float, help='The weight of imporatnce weight regularuzer if zero, it meets finetuning', default = 0.1)
+parser.add_argument('--sparse_lam', type=float, help='The sparisty parameter for our regularizer', default = 1e-3)
+parser.add_argument('--scale', type=float, help='The scale of our gaussian weighting', default = 6)
+parser.add_argument('--parent_exp_dir', type=str, help='exporting direcotry for the trained models', default = './exp')
+parser.add_argument('--Datasets', type=str, help='path for the data direcotry', default = './Datasets')
+args = parser.parse_args()
+
 num_tasks = 5
 reg_lambdas = [0]
 sparse_lams = [1e-3]
-hsizes = [256, 128, 64, 32]
-hsizes = [128, 64]
+hsizes = [ 64]#[128, 64]
 in_layers = [['1', '3'], []]#id of layers where SLNI regularizer is applied
 #
-
-reg_lambdas = [0.1]
-sparse_lams = [0]
-scale = 6#int(sys.argv[1])
+sparse_lam =args.sparse_lam
+reg_lambda = args.reg_lambda
+scale = args.scale
+data_parent_path= 'Datasets'
+parent_exp_dir=args.parent_exp_dir+"/"
 num_epochs = 10
 batch_size=200
-data_parent_path= 'Datasets'
-parent_exp_dir="/esat/dragon/raljundi/SLNI_TEST/"#CHANGE TO YOUR DIRECTORY
+
 print("scale is :", str(scale))
 for hsize in hsizes:
     net_name = 'permuted_' + str(hsize) + '_mnist_net'
@@ -43,114 +54,114 @@ for hsize in hsizes:
 
 
 
-    for sparse_lam in sparse_lams:
-        dlabel = '0'
 
-        model_path = '../my_utils/mnist_net.pth.tar'
+    dlabel = '0'
 
-        dataset_path = data_parent_path + '/permuted_t' + dlabel + '_dataset.pth.tar'
+    model_path = '../my_utils/mnist_net.pth.tar'
 
-        exp_dir = parent_exp_dir+ net_name + 'SGD_MNIST' + dlabel + 'SLNI' + '_scale' + str(
-            scale) + '_lam' + str(sparse_lam)
+    dataset_path = data_parent_path + '/permuted_t' + dlabel + '_dataset.pth.tar'
 
-        num_epochs = 10
-        # reg_lambda=0
+    exp_dir = parent_exp_dir+ net_name + 'SGD_MNIST' + dlabel + 'SLNI' + '_scale' + str(
+        scale) + '_lam' + str(sparse_lam)
 
-        fine_tune_SGD_SLNI(dataset_path=dataset_path, num_epochs=num_epochs, exp_dir=exp_dir,
-                                  model_path=first_model_path, lr=0.01, in_layers=in_layers, batch_size=batch_size,
-                                  pretrained=False, weight_decay=0, init_freeze=0, lam=sparse_lam, scale=scale)
-        model_path = os.path.join(exp_dir, 'best_model.pth.tar')
+    num_epochs = 10
+    # reg_lambda=0
 
-
-        # USE MAS Regularizer to prevent forgetting along with out sparsity regularizer
-
-        from MAS_SLNID import *
+    fine_tune_SGD_SLNI(dataset_path=dataset_path, num_epochs=num_epochs, exp_dir=exp_dir,
+                              model_path=first_model_path, lr=0.01, in_layers=in_layers, batch_size=batch_size,
+                              pretrained=False, weight_decay=0, init_freeze=0, lam=sparse_lam, scale=scale)
+    model_path = os.path.join(exp_dir, 'best_model.pth.tar')
 
 
-        init_label = dlabel
-        for reg_lambda in reg_lambdas:
-            reg_sets = []
+    # USE MAS Regularizer to prevent forgetting along with out sparsity regularizer
+
+
+
+
+    init_label = dlabel
+
+    reg_sets = []
+    dataset_path = data_parent_path + '/permuted_t' + dlabel + '_dataset.pth.tar'
+    exp_dir = parent_exp_dir + net_name + 'SGD_MNIST' + init_label + 'SLNI' + '_scale' + str(
+        scale) + '_lam' + str(sparse_lam)
+
+    try :
+        for t in range(1, num_tasks):
+            dlabel = str(t)
+            reg_sets = [dataset_path]
+            model_path = os.path.join(exp_dir, 'best_model.pth.tar')
+
             dataset_path = data_parent_path + '/permuted_t' + dlabel + '_dataset.pth.tar'
-            exp_dir = parent_exp_dir + net_name + 'SGD_MNIST' + init_label + 'SLNI' + '_scale' + str(
-                scale) + '_lam' + str(sparse_lam)
+            exp_dir = parent_exp_dir + net_name + 'SGD_MNIST' + dlabel + 'SLNI' + '_scale' + str(
+                scale) + '_lam' + str(sparse_lam) + '_MAS' + str(reg_lambda)
+            init_model_path = None
 
-            try :
-                for t in range(1, num_tasks):
-                    dlabel = str(t)
-                    reg_sets = [dataset_path]
-                    model_path = os.path.join(exp_dir, 'best_model.pth.tar')
+            data_dir = None
 
-                    dataset_path = data_parent_path + '/permuted_t' + dlabel + '_dataset.pth.tar'
-                    exp_dir = parent_exp_dir + net_name + 'SGD_MNIST' + dlabel + 'SLNI' + '_scale' + str(
-                        scale) + '_lam' + str(sparse_lam) + '_MAS' + str(reg_lambda)
-                    init_model_path = None
+            # reg_lambda=0
 
-                    data_dir = None
+            fine_MAS_acuumelation_sparce(dataset_path=dataset_path,
+                                                          previous_task_model_path=model_path,
+                                                          init_model_path=init_model_path, exp_dir=exp_dir,
+                                                          data_dir=data_dir, reg_sets=reg_sets,
+                                                          reg_lambda=reg_lambda, batch_size=200,
+                                                          num_epochs=num_epochs, lr=1e-2, weight_decay=0,
+                                                          norm='L2', after_freeze=0, lam=sparse_lam, b1=False,
+                                                          head_shared=True, neuron_omega=True)
 
-                    # reg_lambda=0
+        # Forgetting Test:
 
-                    fine_tune_objective_based_acuumelation_sparce(dataset_path=dataset_path,
-                                                                  previous_task_model_path=model_path,
-                                                                  init_model_path=init_model_path, exp_dir=exp_dir,
-                                                                  data_dir=data_dir, reg_sets=reg_sets,
-                                                                  reg_lambda=reg_lambda, batch_size=200,
-                                                                  num_epochs=num_epochs, lr=1e-2, weight_decay=0,
-                                                                  norm='L2', after_freeze=0, lam=sparse_lam, b1=False,
-                                                                  head_shared=True, neuron_omega=True)
+        average_forgetting = 0
+        avg_acc = 0
+        seq_forgetting = []
+        seq_acc = []
+        for t in range(num_tasks):
+            dlabel = str(t)
+            if t == 0:
+                exp_dir = parent_exp_dir + net_name + 'SGD_MNIST' + dlabel + 'SLNI' + '_scale' + str(
+                    scale) + '_lam' + str(sparse_lam)
+            else:
+                exp_dir = parent_exp_dir + net_name + 'SGD_MNIST' + dlabel + 'SLNI' + '_scale' + str(
+                    scale) + '_lam' + str(sparse_lam) + '_MAS' + str(reg_lambda)
 
-                # Forgetting Test:
+            previous_model_path = os.path.join(exp_dir, 'best_model.pth.tar')
+            exp_dir = parent_exp_dir + net_name + 'SGD_MNIST' + str(
+                num_tasks - 1) + 'SLNI' + '_scale' + str(scale) + '_lam' + str(
+                sparse_lam) + '_MAS' + str(reg_lambda)
+            dataset_path = data_parent_path + '/permuted_t' + dlabel + '_dataset.pth.tar'
+            current_model_path = os.path.join(exp_dir, 'best_model.pth.tar')
 
-                average_forgetting = 0
-                avg_acc = 0
-                seq_forgetting = []
-                seq_acc = []
-                for t in range(num_tasks):
-                    dlabel = str(t)
-                    if t == 0:
-                        exp_dir = parent_exp_dir + net_name + 'SGD_MNIST' + dlabel + 'SLNI' + '_scale' + str(
-                            scale) + '_lam' + str(sparse_lam)
-                    else:
-                        exp_dir = parent_exp_dir + net_name + 'SGD_MNIST' + dlabel + 'SLNI' + '_scale' + str(
-                            scale) + '_lam' + str(sparse_lam) + '_MAS' + str(reg_lambda)
+            acc2 = test_model(current_model_path, dataset_path)
+            acc1 = test_model(previous_model_path, dataset_path)
+            forgetting = acc1 - acc2
+            average_forgetting = average_forgetting + forgetting
+            avg_acc = avg_acc + acc2
+            seq_forgetting.append(forgetting)
+            seq_acc.append(acc2)
+        average_forgetting = average_forgetting / num_tasks
+        avg_acc = avg_acc / num_tasks
+        print("avg forgetting",average_forgetting)
+        print("avg acc is ", avg_acc)
+        results['SLNI' + '_scale' + str(scale) + '_lam' + str(
+            sparse_lam) + '_MAS' + str(reg_lambda)] = average_forgetting
+        avg_accs['SLNI' + '_scale' + str(scale) + '_lam' + str(
+            sparse_lam) + '_MAS' + str(reg_lambda)] = avg_acc
+        total_seq_forgetting['SLNI' + '_scale' + str(scale) + '_lam' + str(
+            sparse_lam) + '_MAS' + str(reg_lambda)] = seq_forgetting
+        total_seq_acc['SLNI' + '_scale' + str(scale) + '_lam' + str(
+            sparse_lam) + '_MAS' + str(reg_lambda)] = seq_acc
+    except:
 
-                    previous_model_path = os.path.join(exp_dir, 'best_model.pth.tar')
-                    exp_dir = parent_exp_dir + net_name + 'SGD_MNIST' + str(
-                        num_tasks - 1) + 'SLNI' + '_scale' + str(scale) + '_lam' + str(
-                        sparse_lam) + '_MAS' + str(reg_lambda)
-                    dataset_path = data_parent_path + '/permuted_t' + dlabel + '_dataset.pth.tar'
-                    current_model_path = os.path.join(exp_dir, 'best_model.pth.tar')
-
-                    acc2 = test_model(current_model_path, dataset_path)
-                    acc1 = test_model(previous_model_path, dataset_path)
-                    forgetting = acc1 - acc2
-                    average_forgetting = average_forgetting + forgetting
-                    avg_acc = avg_acc + acc2
-                    seq_forgetting.append(forgetting)
-                    seq_acc.append(acc2)
-                average_forgetting = average_forgetting / num_tasks
-                avg_acc = avg_acc / num_tasks
-                print("avg forgetting",average_forgetting)
-                print("avg acc is ", avg_acc)
-                results['SLNI' + '_scale' + str(scale) + '_lam' + str(
-                    sparse_lam) + '_MAS' + str(reg_lambda)] = average_forgetting
-                avg_accs['SLNI' + '_scale' + str(scale) + '_lam' + str(
-                    sparse_lam) + '_MAS' + str(reg_lambda)] = avg_acc
-                total_seq_forgetting['SLNI' + '_scale' + str(scale) + '_lam' + str(
-                    sparse_lam) + '_MAS' + str(reg_lambda)] = seq_forgetting
-                total_seq_acc['SLNI' + '_scale' + str(scale) + '_lam' + str(
-                    sparse_lam) + '_MAS' + str(reg_lambda)] = seq_acc
-            except:
-
-                pdb.set_trace()
-                traceback.print_exc()
-                total_seq_forgetting['SLNI' + '_scale' + str(scale) + '_lam' + str(
-                    sparse_lam) + '_MAS' + str(reg_lambda)] = 0
-                total_seq_acc['SLNI' + '_scale' + str(scale) + '_lam' + str(
-                    sparse_lam) + '_MAS' + str(reg_lambda)] = 0
-                results['SLNI' + '_scale' + str(scale) + '_lam' + str(
-                    sparse_lam) + '_MAS' + str(reg_lambda)] = -1
-                avg_accs['SLNI' + '_scale' + str(scale) + '_lam' + str(
-                    sparse_lam) + '_MAS' + str(reg_lambda)] = -1
+        pdb.set_trace()
+        traceback.print_exc()
+        total_seq_forgetting['SLNI' + '_scale' + str(scale) + '_lam' + str(
+            sparse_lam) + '_MAS' + str(reg_lambda)] = 0
+        total_seq_acc['SLNI' + '_scale' + str(scale) + '_lam' + str(
+            sparse_lam) + '_MAS' + str(reg_lambda)] = 0
+        results['SLNI' + '_scale' + str(scale) + '_lam' + str(
+            sparse_lam) + '_MAS' + str(reg_lambda)] = -1
+        avg_accs['SLNI' + '_scale' + str(scale) + '_lam' + str(
+            sparse_lam) + '_MAS' + str(reg_lambda)] = -1
 
     results1 = {}
     avg_accs1 = {}
