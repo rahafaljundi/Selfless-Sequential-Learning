@@ -10,7 +10,7 @@ from PIL import Image
 import os
 import matplotlib.pyplot as plt
 plt.ion()
-sys.path.append('../shared_utils')
+
 
 import shutil
 import pdb
@@ -38,22 +38,8 @@ cfg = {
     '11Slim': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512]
     
 }
-class VGGSlim(torchvision.models.VGG):
 
-    def __init__(self, config='11Slim', num_classes=50, init_weights=True):
-        features=make_layers(cfg[config])
-        super(VGGSlim, self).__init__(features)
-        
-        self.classifier = nn.Sequential(
-            nn.Linear(512 * 7 * 7, 1000),
-            nn.ReLU(True),
-            nn.Linear(1000, 500),
-            nn.ReLU(True),
-            nn.Linear(500, num_classes),
-        )
-        if init_weights:
-            self._initialize_weights()
-class VGGSlim2(torchvision.models.VGG):
+class VGGSlim(torchvision.models.VGG):
 
     def __init__(self, config='11Slim', num_classes=50, init_weights=True):
         features=make_layers(cfg[config])
