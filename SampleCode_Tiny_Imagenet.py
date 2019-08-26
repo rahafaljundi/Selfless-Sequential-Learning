@@ -13,7 +13,7 @@ def set_random(seed=7):
     numpy.random.seed(seed)
 import random
 import numpy
-machine='yourmachine'
+
 #GETTING INPUT PARAMS
 #--------------------------------------
 parser = argparse.ArgumentParser()
@@ -37,7 +37,7 @@ neuron_omega=opt.neuron_omega
 b1=opt.b1
 dropout=opt.dropout
 lr_decay_epoch=20
-
+extra_str="tinyimagenet_exp"
 for arg in vars(opt):
     extra_str=extra_str+str(arg,)+'_'+str(getattr(opt, arg))
 
@@ -54,7 +54,7 @@ if 1:
     dataset_parent_dir='/yourpath/tiny-imagenet-200/'
     from Finetune_SNI_ICLR import *
 
-    exp_dir=os.path.join(parent_exp_dir,'1','MAS_DecovZML/'+extra_str)
+    exp_dir=os.path.join(parent_exp_dir,'1','SLNID/'+extra_str)
     dataset_path=os.path.join(dataset_parent_dir,task_name,'trainval_dataset.pth.tar')
     set_random()
     fine_tune_SGD_SLNI(dataset_path=dataset_path, num_epochs=num_epochs,exp_dir=exp_dir,model_path=model_path,batch_size=200,lr=lr,init_freeze=0,lam=lam,lr_decay_epoch=lr_decay_epoch,in_layers=in_layers,pretrained=False,weight_decay=0,scale=scale)
