@@ -9,6 +9,10 @@ import torchvision
 from PIL import Image
 import os
 import os.path
+import bisect
+import warnings
+
+from torch._utils import _accumulate
 from torchvision import datasets, models, transforms
 IMG_EXTENSIONS = [
     '.jpg', '.JPG', '.jpeg', '.JPEG',
@@ -101,11 +105,16 @@ class ImageFolderTrainVal(datasets.ImageFolder):
         classes (list): List of the class names.
         class_to_idx (dict): Dict with items (class_name, class_index).
         imgs (list): List of (image path, class_index) tuples
+    #UPDATE,4thJul18:
+            If calsses is given, other classes in the folder will be ignored
     """
 
     def __init__(self, root,files_list, transform=None, target_transform=None,
-                 loader=default_loader):
-        classes, class_to_idx = find_classes(root)
+                 loader=default_loader,classes=None):
+        if classes is  None:
+            classes, class_to_idx = find_classes(root)
+        else:
+            class_to_idx = {classes[i]: i for i in range(len(classes))}
         print(root)
         imgs = make_dataset(root, class_to_idx,files_list)
         if len(imgs) == 0:
@@ -146,6 +155,34 @@ def random_split(dataset, lengths):
     assert sum(lengths) == len(dataset)
     indices = torch.randperm(sum(lengths))
     return [ImageFolder_Subset(dataset, indices[offset - length:offset]) for offset, length in zip(accumulate(lengths), lengths)]
+
+
+class ConcatDatasetLabels( torch.utils.data.ConcatDataset):
+    """
+    Dataset to concatenate multiple datasets.
+    Purpose: useful to assemble different existing datasets, possibly
+    large-scale datasets as the concatenation operation is done in an
+    on-the-fly manner.
+    Arguments:
+        datasets (sequence): List of datasets to be concatenated
+        the output labels are shifted by the dataset index which differs from the pytorch implementation that return the original labels
+    """
+
+    
+
+    def __init__(self, datasets,classes_len):
+        super(ConcatDatasetLabels, self).__init__(datasets)
+        self.cumulative_classes_len =list(accumulate (classes_len)  )
+    def __getitem__(self, idx):
+        dataset_idx = bisect.bisect_right(self.cumulative_sizes, idx)
+        if dataset_idx == 0:
+            sample_idx = idx
+            img,label= self.datasets[dataset_idx][sample_idx]
+        else:
+            sample_idx = idx - self.cumulative_sizes[dataset_idx - 1]
+            img,label= self.datasets[dataset_idx][sample_idx]
+            label=label+self.cumulative_classes_len[dataset_idx-1]
+        return img,label
 
 
 

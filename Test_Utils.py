@@ -45,3 +45,23 @@ def test_model(model_path, dataset_path, batch_size=600, print_classes_acc=False
     accuracy = np.sum(class_correct) * 100 / np.sum(class_total)
     print('Accuracy: ' + str(accuracy))
     return accuracy
+
+
+def test_seq_task_performance(previous_model_path,current_model_path,dataset_path,check=0):
+    current_model_ft=torch.load(current_model_path)
+    if isinstance(current_model_ft, dict): 
+        current_model_ft=current_model_ft['model']
+    
+    previous_model_ft=torch.load(previous_model_path)
+    if isinstance(previous_model_ft, dict): 
+        previous_model_ft=previous_model_ft['model']
+
+    last_layer_index=str(len(previous_model_ft.module.classifier._modules)-1)
+    
+    current_model_ft.module.classifier._modules[last_layer_index] = previous_model_ft.module.classifier._modules[last_layer_index]
+    
+    temp_path='tobetested.pth.tar'
+    torch.save(current_model_ft,temp_path)
+    acc=test_model(temp_path,dataset_path)
+    return acc
+

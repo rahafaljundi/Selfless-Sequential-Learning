@@ -3,6 +3,38 @@
 import sys
 from SGD_Training import *
 from SLNI import *
+from VGGSlim import *
+import sys
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.autograd import Variable
+import numpy as np
+import torchvision
+from torchvision import datasets, models, transforms
+from PIL import Image
+import os
+import matplotlib.pyplot as plt
+plt.ion()
+
+
+
+
+class VGGSlim(torchvision.models.VGG):
+
+    def __init__(self, config='11Slim', num_classes=50, init_weights=True):
+        features=make_layers(cfg[config])
+        super(VGGSlim, self).__init__(features)
+        
+        self.classifier = nn.Sequential(
+            nn.Linear(512 * 7 * 7, 500),
+            nn.ReLU(True),
+            nn.Linear(500, 500),
+            nn.ReLU(True),
+            nn.Linear(500, num_classes),
+        )
+        if init_weights:
+            self._initialize_weights()
 
 def exp_lr_scheduler(optimizer, epoch, init_lr=0.0004, lr_decay_epoch=45):
     """Decay learning rate by a factor of 0.1 every lr_decay_epoch epochs."""
@@ -55,6 +87,9 @@ pretrained=True,in_layers=[[],['2','5']],weight_decay=1e-5,lr_multiplier=None,L1
         model_ft = model_ft.cuda()
     
     model_ft=SLNI_Module(model_ft,in_layers)
+    #MODEL UPDATE TO NEW PYTORCH	
+    for i in [0,3,6,8,11,13]:
+        model_ft.module.features[i].padding_mode='zeros'
     model_ft.scale=scale
     model_ft.squash=squash
     criterion = nn.CrossEntropyLoss()
@@ -102,13 +137,15 @@ def fine_tune_SGD_Decov_zm_L1_Probs(dataset_pathes,task_index,probs,model_path,e
        
     else:
         model_ft=torch.load(model_path)
-  
+  	
     if not os.path.exists(exp_dir):
         os.makedirs(exp_dir)
     if use_gpu:
         model_ft = model_ft.cuda()
-    
-    model_ft=AlexNet_DeCov_zm(model_ft,in_layers)
+    #MODEL UPDATE TO NEW PYTORCH	
+    for i in [0,3,6,8,11,13]:
+        model_ft.module.features[i].padding_mode='zeros'
+    model_ft=SLNI_Module(model_ft,in_layers)
     model_ft.scale=scale
     model_ft.squash=squash
     criterion = nn.CrossEntropyLoss()
@@ -133,7 +170,7 @@ def fine_tune_SGD_Decov_zm_L1_Probs(dataset_pathes,task_index,probs,model_path,e
     return model_ft
 
 
-def fine_tune_SGD_Decov_zm_L1_earlyStopping(dataset_path,model_path,exp_dir,batch_size=100, num_epochs=100,lr=0.0004,init_freeze=1,lam=1e-8,lr_decay_epoch=45,pretrained=True,in_layers=[[],['2','5']],weight_decay=1e-5,lr_multiplier=None,L1_Decay=False,scale=4):
+def fine_tune_SGD_SLNI_ES(dataset_path,model_path,exp_dir,batch_size=100, num_epochs=100,lr=0.0004,init_freeze=1,lam=1e-8,lr_decay_epoch=45,pretrained=True,in_layers=[[],['2','5']],weight_decay=1e-5,lr_multiplier=None,L1_Decay=False,scale=4):
     """
     scale for Gauassian Weighting, the size of the layer is diveded by this value to determine the scale of the Gaussiana 
     and hence the affect of the cov loss between neurons.
@@ -166,8 +203,12 @@ def fine_tune_SGD_Decov_zm_L1_earlyStopping(dataset_path,model_path,exp_dir,batc
         os.makedirs(exp_dir)
     if use_gpu:
         model_ft = model_ft.cuda()
-    
-    model_ft=AlexNet_DeCov_zm(model_ft,in_layers)
+
+   
+    model_ft=SLNI_Module(model_ft,in_layers)
+     #MODEL UPDATE TO NEW PYTORCH	
+    for i in [0,3,6,8,11,13]:
+        model_ft.module.features[i].padding_mode='zeros'
     model_ft.scale=scale
     criterion = nn.CrossEntropyLoss()
 

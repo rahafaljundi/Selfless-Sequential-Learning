@@ -43,7 +43,7 @@ class VGGSlim(torchvision.models.VGG):
 
     def __init__(self, config='11Slim', num_classes=50, init_weights=True):
         features=make_layers(cfg[config])
-        super(VGGSlim2, self).__init__(features)
+        super(VGGSlim, self).__init__(features)
         
         self.classifier = nn.Sequential(
             nn.Linear(512 * 7 * 7, 500),
@@ -54,3 +54,5 @@ class VGGSlim(torchvision.models.VGG):
         )
         if init_weights:
             self._initialize_weights()
+
+
