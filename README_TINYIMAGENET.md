@@ -6,6 +6,7 @@ https://drive.google.com/file/d/1bLnFRDEf5AtapN7KvkWJbG9ChWKBBoLK/view?usp=shari
 2-Put the zip file in the smae code folder
 
 3-Run the following commands 
+
 	-make_tinyImagenet_dataset.sh
 
 	-python SampleCode_Tiny_Imagenet.py
