@@ -1,6 +1,6 @@
 Demo on tiny imagenet.
 
-1-Dowanload the tiny imagenet datasaet from this link: 
+1-Download the tiny imagenet datasaet from this link: 
 https://drive.google.com/file/d/1bLnFRDEf5AtapN7KvkWJbG9ChWKBBoLK/view?usp=sharing 
 
 2-Put the zip file in the smae code folder
