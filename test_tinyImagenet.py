@@ -4,13 +4,7 @@ import argparse
 import sys
 import os
 import pdb
-if 0:
-	os.chdir('/users/visics/raljundi/Code/MyOwnCode/Pytorch/Object_recognition')
-	print(os.getcwd())
-	sys.path.append('/users/visics/raljundi/Code/MyOwnCode/Pytorch/Object_recognition')
-	sys.path.append('/users/visics/raljundi/Code/MyOwnCode/Pytorch/Object_recognition/SNI_ICLR')
-	sys.path.append('/users/visics/raljundi/Code/MyOwnCode/Pytorch/my_utils')
-	sys.path.append('/users/visics/raljundi/Code/MyOwnCode/Pytorch/survey/tiny_imagenet')
+
 from MAS_SLNID import *
 from VGGSlim import *
 from Test_Utils import *
@@ -77,10 +71,11 @@ def plot_multibar( seqacc,keys,colors,labels,hatches,save_img=False,ylim=(88, 97
 ###############################################
 
 results={}#torch.load("tinyImagenet.pth")
-lams=[5e-6,0]
+lams=[1e-6,0]
 
 scales=[6]
 lambdas=[4]
+parent_exp_dir='./TINYIMAGNET_exp_dir/'#Change to yours
 for normalize in [False]:
     for scale in scales:
         print("***** scale is ",scale,"**********")
@@ -93,26 +88,16 @@ for normalize in [False]:
                 print("***** reg_lambda is ",reg_lambda,"**********")
                 accs=[]
                 forgettings=[]
-                extra_str="tinyimagenet_exp"+"lam_"+str(lam)+"num_epochs_60reg_lambda_"+str(reg_lambda)+"lr_0.01b1_Falseneuron_omega_Truenormalize_"+str(normalize)+"dropout_Falsescale_"+str(scale)
-                model_path='/esat/monkey/raljundi/pytorch/object_recognition_exp/selfless_sequential/10tasks/VGG11Slim2/CES//10/MAS_DecovZML/'+extra_str+'/best_model.pth.tar'
-                model_path='/esat/monkey/raljundi/pytorch/object_recognition_exp/selfless_sequential/10tasks/VGG11Slim2/CES/TESTGIHUB/10/SLNID/'+extra_str+'/best_model.pth.tar'#tinyimagenet_explam_2e-06num_epochs_60reg_lambda_4lr_0.01b1_Falseneuron_omega_Falsenormalize_Falsedropout_Falsescale_6
-                data_dir='/esat/monkey/raljundi/tiny-imagenet-200-tasks//tiny-imagenet-200/'
+                extra_str="tinyimagenet_exp"+"num_epochs_60reg_lambda_"+str(reg_lambda)+"lr_0.01b1_Falseneuron_omega_Truenormalize_"+str(normalize)+"dropout_Falsescale_"+str(scale)+"_lam"+str(lam)
+               
+                model_path=parent_exp_dir+'/10/SLNID/'+extra_str+'/best_model.pth.tar'
+                data_dir='./TINYIMAGNET'
                 for task in range(1,11):
                     try:
-                        model=torch.load(model_path)  
-                        #model.squash='exp'#squashing function exp or sigmoid
-                        #model.min=1#min or multiply of two neuron importance
-                        #model.abs=True
-                        #model.divide_by_tasks=False 
-                        #torch.save(model,model_path)    
+                        model=torch.load(model_path)     
                         dataset_path=os.path.join(data_dir,str(task),'trainval_dataset.pth.tar')
-                        task_model_path='/esat/monkey/raljundi/pytorch/object_recognition_exp/selfless_sequential/10tasks/VGG11Slim2/CES/TESTGIHUB//'+str(task)+'/SLNID/'+extra_str+'/best_model.pth.tar'
-                        #model=torch.load(task_model_path)  
-                        #model.squash='exp'#squashing function exp or sigmoid
-                        #model.min=1#min or multiply of two neuron importance
-                        #model.abs=True
-                        #model.divide_by_tasks=False 
-                        #torch.save(model,task_model_path)    
+                        task_model_path=parent_exp_dir+str(task)+'/SLNID/'+extra_str+'/best_model.pth.tar'
+
                         acc=test_seq_task_performance(task_model_path,model_path,dataset_path)   
                         accorg=test_model(task_model_path,dataset_path) 
                         print('task number ',task,' accuracy is %.2f'%acc, 'compared to %.2f'%accorg)  
@@ -128,13 +113,16 @@ for normalize in [False]:
 
 seqacc={}
 keys=list(results.keys())
+avg={}
 for key in keys:
     seqacc[key]=results[key][0]
-hatches=["",""]
+    avg[key]=sum(seqacc[key])/len(seqacc[key])
+	
+hatches=["",""] 
 colors=['C0','C2']
-labels=['SNID',"No-Reg"]
+labels=['SNID: '+str(round(avg[keys[0]],2)),"No-Reg: "+str(round(avg[keys[1]],2))]
 
 plot_multibar( seqacc,keys,colors,labels,hatches,save_img="tinyimagent_bars",ylim=(40, 66),bar_widthT= 0.12,bar_width = 0.14,legend="best")
 
-torch.save(results,"SampleCode_tinyImagenet.pth")
+torch.save(results,"SampleCode_tinyImagenet_results.pth")
 

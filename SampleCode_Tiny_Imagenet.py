@@ -42,7 +42,7 @@ neuron_omega=opt.neuron_omega
 b1=opt.b1
 dropout=opt.dropout
 lr_decay_epoch=20
-extra_str="tinyimagenet_exp"
+
 
 in_layers=[[],['1','3']]
 task_name='1'
@@ -51,16 +51,17 @@ nb_tasks=10
 lams=[1e-6,0]  #the weight of the regualizer. When SLNID lambda is 0, it is equal to No-Reg baseline
 #--------------------------------------
 for lam in lams:
+    extra_str="tinyimagenet_exp"
     for arg in vars(opt):
         extra_str=extra_str+str(arg,)+'_'+str(getattr(opt, arg))
     extra_str=extra_str+"_lam"+str(lam)
     print(extra_str)
-    model_path='./vgg11slim.pth.tar'
-    model_path='/esat/monkey/raljundi/tiny-imagenet-200/vgg11slim2.pth.tar'#TEST
-    parent_exp_dir='/yourexpdir/'
-    parent_exp_dir='/esat/monkey/raljundi/pytorch/object_recognition_exp/selfless_sequential/10tasks/VGG11Slim2/CES/TESTGIHUB/'
-    exp_dir=os.path.join(parent_exp_dir,'1','MAS_DecovZML/'+extra_str)
-    dataset_parent_dir='/yourpath/tiny-imagenet-200/'
+    model_path='./vgg11slim2.pth.tar'
+
+    parent_exp_dir='./TINYIMAGNET_exp_dir/'#Change to yours
+    
+    
+   
     dataset_parent_dir='./TINYIMAGNET'
    
 

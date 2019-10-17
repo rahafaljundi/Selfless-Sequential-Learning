@@ -6,12 +6,12 @@ https://drive.google.com/file/d/1bLnFRDEf5AtapN7KvkWJbG9ChWKBBoLK/view?usp=shari
 2-Put the zip file in the smae code folder
 
 3-Run the following commands 
-	-python make_tinyImagenet_dataset.py
+	-make_tinyImagenet_dataset.sh
 
 	-python SampleCode_Tiny_Imagenet.py
 
 	-python test_tinyImagenet.py
 
 
-You will get the results of both NoReg and our SLNID with MAS.
-The code might be a bit buggy, it will be clean by the end of the week 
+You will get the results of both NoReg and our SLNID with MAS, shown on "tinyimagent_bars.png"  and saved in "SampleCode_tinyImagenet_results.pth"
+
